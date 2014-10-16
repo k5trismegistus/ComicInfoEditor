@@ -28,28 +28,28 @@ def get_metadata(filepath):
         return series
 
     def get_writer():
-        series = root.findtext('Writer')
-        return series
+        writer = root.findtext('Writer').split(', ')
+        return writer
 
     def get_penciller():
-        series = root.findtext('Penciller')
-        return series
+        penciller = root.findtext('Penciller').split(', ')
+        return penciller
 
     def get_genre():
-        series = root.findtext('Genre')
-        return series
+        genre = root.findtext('Genre').split(', ')
+        return genre
 
     def get_year():
-        series = root.findtext('Year')
-        return series
+        year = root.findtext('Year')
+        return year
 
     def get_month():
-        series = root.findtext('Month')
-        return series
+        month = root.findtext('Month')
+        return month
 
     def get_day():
-        series = root.findtext('Day')
-        return series
+        day = root.findtext('Day')
+        return day
 
     metadata = {}
 

@@ -1,6 +1,7 @@
 import os
 import wx
 import InfoEditor
+import lexicon_parser
 
 
 class ComicInfoGetter(wx.App):
@@ -19,6 +20,8 @@ class GuiWindow(wx.Frame):
         panel = wx.Panel(self, wx.ID_ANY)
 
         self.lexicon_url_input = wx.TextCtrl(panel, wx.ID_ANY, 'Info URL')
+        self.query_lexicon_button = wx.Button(panel, wx.ID_ANY, 'Query Lexicon')
+
         self.filepath = wx.TextCtrl(panel, wx.ID_ANY , 'Archive Path', style=wx.TE_READONLY)
         self.openfilebutton = wx.Button(panel, wx.ID_ANY, '...')
 
@@ -26,15 +29,26 @@ class GuiWindow(wx.Frame):
         self.resetbutton = wx.Button(panel, wx.ID_ANY, 'Reset Editing')
 
         self.editorfield_series = wx.TextCtrl(panel, wx.ID_ANY, 'Series')
+        self.search_by_title_button = wx.Button(panel, wx.ID_ANY, 'Search')
+
         self.editorfield_writer = wx.TextCtrl(panel, wx.ID_ANY, '')
+
+
         self.editorfield_penciller = wx.TextCtrl(panel, wx.ID_ANY, '')
         self.editorfield_genre = wx.TextCtrl(panel, wx.ID_ANY, '')
+
+
         self.editorfield_year = wx.TextCtrl(panel, wx.ID_ANY, '')
         self.editorfield_month = wx.TextCtrl(panel, wx.ID_ANY, '')
         self.editorfield_day = wx.TextCtrl(panel, wx.ID_ANY, '')
 
+
+        self.query_lexicon_button.Bind(wx.EVT_BUTTON, self.query_lexicon)
         self.openfilebutton.Bind(wx.EVT_BUTTON, self.open_archive)
+        self.search_by_title_button.Bind(wx.EVT_BUTTON, self.search_by_title)
+
         self.filepath.Bind(wx.EVT_TEXT, self.load_comicinfo)
+
         self.savebutton.Bind(wx.EVT_BUTTON, self.save_comicinfo)
         self.resetbutton.Bind(wx.EVT_BUTTON, self.load_comicinfo)
 
@@ -54,8 +68,11 @@ class GuiWindow(wx.Frame):
         line_filepath.Add(self.openfilebutton, proportion=0)
 
         line_lexiconurl.Add(self.lexicon_url_input, proportion=1, flag=wx.GROW)
+        line_lexiconurl.Add(self.query_lexicon_button, proportion=0, flag=wx.GROW)
 
         line_series.Add(self.editorfield_series, proportion=1, flag=wx.GROW)
+        line_series.Add(self.search_by_title_button, proportion=0, flag=wx.GROW)
+
 
         line_artist.Add(self.editorfield_writer, proportion=1, flag=wx.GROW)
         line_artist.Add(self.editorfield_penciller, proportion=1, flag=wx.GROW)
@@ -92,15 +109,15 @@ class GuiWindow(wx.Frame):
 
         self.editorfield_writer.SetValue('')
         if metadata['Writer']:
-            self.editorfield_writer.SetValue(metadata['Writer'])
+            self.editorfield_writer.SetValue(', '.join(metadata['Writer']))
 
         self.editorfield_penciller.SetValue('')
         if metadata['Penciller']:
-            self.editorfield_penciller.SetValue(metadata['Penciller'])
+            self.editorfield_penciller.SetValue(', '.join(metadata['Penciller']))
 
         self.editorfield_genre.SetValue('')
         if metadata['Genre']:
-            self.editorfield_genre.SetValue(metadata['Genre'])
+            self.editorfield_genre.SetValue(', '.join(metadata['Genre']))
 
         self.editorfield_year.SetValue('')
         if metadata['Year']:
@@ -119,6 +136,14 @@ class GuiWindow(wx.Frame):
         filepath = self.filepath.GetValue()
         metadata = InfoEditor.get_metadata(filepath)
         self.set_text_fields(metadata)
+
+    def query_lexicon(self, e):
+        url = self.lexicon_url_input.GetValue()
+        metadata = lexicon_parser.search_by_url(url)
+        self.set_text_fields(metadata)
+
+    def search_by_title(self, e):
+        wx.MessageBox('This function is under construction.', 'Info', wx.OK | wx.ICON_INFORMATION)
 
     def save_comicinfo(self, e):
         filepath = self.filepath.GetValue()
@@ -139,6 +164,7 @@ class GuiWindow(wx.Frame):
 
         return metadata
 
+
 class Droptarget(wx.FileDropTarget):
 
     def __init__(self, window):
@@ -150,6 +176,7 @@ class Droptarget(wx.FileDropTarget):
             self.window.filepath.SetValue(files[0])
         else:
             wx.MessageBox("I can't do with multiple files!", 'Error')
+
 
 if __name__ == '__main__':
     app = ComicInfoGetter()
