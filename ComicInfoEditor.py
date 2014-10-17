@@ -2,6 +2,7 @@ import os
 import wx
 import InfoEditor
 import lexicon_parser
+import  ChooserFromLexicon
 
 
 class ComicInfoGetter(wx.App):
@@ -131,7 +132,6 @@ class GuiWindow(wx.Frame):
         if metadata['Day']:
             self.editorfield_day.SetValue(metadata['Day'])
 
-
     def load_comicinfo(self, e):
         filepath = self.filepath.GetValue()
         metadata = InfoEditor.get_metadata(filepath)
@@ -143,7 +143,10 @@ class GuiWindow(wx.Frame):
         self.set_text_fields(metadata)
 
     def search_by_title(self, e):
-        wx.MessageBox('This function is under construction.', 'Info', wx.OK | wx.ICON_INFORMATION)
+        search_keyword = self.editorfield_series.GetValue()
+        metadatas = lexicon_parser.search_from_keyword(search_keyword)
+        chooser = ChooserFromLexicon.CandidateChooser(metadatas, self.set_text_fields)
+        chooser.Show()
 
     def save_comicinfo(self, e):
         filepath = self.filepath.GetValue()

@@ -28,27 +28,45 @@ def get_metadata(filepath):
         return series
 
     def get_writer():
-        writer = root.findtext('Writer').split(', ')
+        try:
+            writer = root.findtext('Writer').split(', ')
+        except:
+            writer = []
         return writer
 
     def get_penciller():
-        penciller = root.findtext('Penciller').split(', ')
+        try:
+            penciller = root.findtext('Penciller').split(', ')
+        except:
+            penciller = []
         return penciller
 
     def get_genre():
-        genre = root.findtext('Genre').split(', ')
+        try:
+            genre = root.findtext('Genre').split(', ')
+        except:
+            genre = []
         return genre
 
     def get_year():
-        year = root.findtext('Year')
+        try:
+            year = root.findtext('Year')
+        except:
+            year = ''
         return year
 
     def get_month():
-        month = root.findtext('Month')
+        try:
+            month = root.findtext('Month')
+        except:
+            month = ''
         return month
 
     def get_day():
-        day = root.findtext('Day')
+        try:
+            day = root.findtext('Day')
+        except:
+            day = ''
         return day
 
     metadata = {}
@@ -86,13 +104,13 @@ def write_metadata(filepath, metadata):
             root = infotree.getroot()
 
             try:
-                root.find('Number').remove
+                root.remove(root.find('Number'))
             except:
-                pass
+                print('There is no number')
             try:
-                root.find('Title').remove
+                root.remove(root.find('Title'))
             except:
-                pass
+                print('There is no title')
             for k, v in metadata.items():
                 if (v != '') & (root.find(k) is not None):
                     root.find(k).text = v
@@ -102,9 +120,9 @@ def write_metadata(filepath, metadata):
                     root.append(newelement)
                 elif v == '':
                     try:
-                        root.find(k).remove
+                        root.remove(root.find(k))
                     except:
-                        pass
+                        print('remove failed')
             infotree.write(g, encoding='unicode')
 
         return g
@@ -115,6 +133,7 @@ def write_metadata(filepath, metadata):
 
     with zipfile.ZipFile(filepath, mode='a',) as z:
         z.writestr('ComicInfo.xml', gx.getvalue())
+
 
 def remove_comicinfo_from_zip(filepath):
     tempdir = tempfile.mkdtemp()
