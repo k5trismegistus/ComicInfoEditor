@@ -23,10 +23,6 @@ def get_metadata(filepath):
             series = series
         return series
 
-    def get_series():
-        series = root.findtext('Series')
-        return series
-
     def get_writer():
         try:
             writer = root.findtext('Writer').split(', ')
@@ -76,19 +72,17 @@ def get_metadata(filepath):
             comicinfoxml = z.open('ComicInfo.xml', mode='r')
             infotree = etree.parse(comicinfoxml)
             root = infotree.getroot()
+            metadata['Series'] = get_full_series()
+            metadata['Writer'] = get_writer()
+            metadata['Penciller'] = get_penciller()
+            metadata['Genre'] = get_genre()
+            metadata['Year'] = get_year()
+            metadata['Month'] = get_month()
+            metadata['Day'] = get_day()
+
+            return metadata
         except:
-            print('There is No ComicInfo.xml or Some Error')
-
-    metadata['Series'] = get_full_series()
-    metadata['Writer'] = get_writer()
-    metadata['Penciller'] = get_penciller()
-    metadata['Genre'] = get_genre()
-    metadata['Year'] = get_year()
-    metadata['Month'] = get_month()
-    metadata['Day'] = get_day()
-
-    print(metadata)
-    return metadata
+            raise
 
 
 def write_metadata(filepath, metadata):
@@ -99,6 +93,7 @@ def write_metadata(filepath, metadata):
         g = io.StringIO()
 
         with zipfile.ZipFile(filepath, mode='r',) as z:
+
             comicinfoxml = z.open('ComicInfo.xml', mode='r')
             infotree = etree.parse(comicinfoxml)
             root = infotree.getroot()
@@ -106,11 +101,11 @@ def write_metadata(filepath, metadata):
             try:
                 root.remove(root.find('Number'))
             except:
-                print('There is no number')
+                pass
             try:
                 root.remove(root.find('Title'))
             except:
-                print('There is no title')
+                pass
             for k, v in metadata.items():
                 if (v != '') & (root.find(k) is not None):
                     root.find(k).text = v

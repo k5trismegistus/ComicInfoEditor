@@ -43,15 +43,23 @@ class GuiWindow(wx.Frame):
         self.editorfield_month = wx.TextCtrl(panel, wx.ID_ANY, '')
         self.editorfield_day = wx.TextCtrl(panel, wx.ID_ANY, '')
 
+        self.fields_metadatas = [
+            self.editorfield_series,
+            self.editorfield_writer,
+            self.editorfield_penciller,
+            self.editorfield_genre,
+            self.editorfield_year,
+            self.editorfield_month,
+            self.editorfield_day
+        ]
+
 
         self.query_lexicon_button.Bind(wx.EVT_BUTTON, self.query_lexicon)
-        self.openfilebutton.Bind(wx.EVT_BUTTON, self.open_archive)
+        self.openfilebutton.Bind(wx.EVT_BUTTON, self.show_fileopen_dialog)
         self.search_by_title_button.Bind(wx.EVT_BUTTON, self.search_by_title)
 
-        self.filepath.Bind(wx.EVT_TEXT, self.load_comicinfo)
-
         self.savebutton.Bind(wx.EVT_BUTTON, self.save_comicinfo)
-        self.resetbutton.Bind(wx.EVT_BUTTON, self.load_comicinfo)
+        self.resetbutton.Bind(wx.EVT_BUTTON, self.open_archive)
 
         dt = Droptarget(self)
         self.SetDropTarget(dt)
@@ -95,13 +103,24 @@ class GuiWindow(wx.Frame):
 
         panel.SetSizer(layout)
 
-    def open_archive(self, e):
+    def open_archive(self, path):
+        self.reset_url_field()
+        try:
+            self.set_text_fields(self.load_comicinfo(path))
+        except:
+             wx.MessageBox("I can't find Comicrack.xml", 'Error')
+             self.filepath.SetValue('')
+
+    def show_fileopen_dialog(self, e):
         path = ''
         dialog = wx.FileDialog(self, "Choose a File", path, "*.*")
         if dialog.ShowModal() == wx.ID_OK:
             path = os.path.join(dialog.GetDirectory(), dialog.GetFilename())
             self.filepath.SetValue(path)
         dialog.Destroy()
+
+    def reset_url_field(self):
+        self.lexicon_url_input.SetValue('')
 
     def set_text_fields(self, metadata):
         self.editorfield_series.SetValue('')
@@ -132,10 +151,12 @@ class GuiWindow(wx.Frame):
         if metadata['Day']:
             self.editorfield_day.SetValue(metadata['Day'])
 
-    def load_comicinfo(self, e):
-        filepath = self.filepath.GetValue()
-        metadata = InfoEditor.get_metadata(filepath)
-        self.set_text_fields(metadata)
+    def load_comicinfo(self, path):
+        try:
+            metadata = InfoEditor.get_metadata(path)
+            return metadata
+        except:
+            raise
 
     def query_lexicon(self, e):
         url = self.lexicon_url_input.GetValue()
@@ -177,8 +198,11 @@ class Droptarget(wx.FileDropTarget):
     def OnDropFiles(self, x, y, files):
         if len(files) == 1:
             self.window.filepath.SetValue(files[0])
+            self.window.open_archive(files[0])
+            return True
         else:
             wx.MessageBox("I can't do with multiple files!", 'Error')
+            return False
 
 
 if __name__ == '__main__':
